@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Neko Quest: 75 Words</title>
+    <title>Neko Quest: The Grand Challenge</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&display=swap" rel="stylesheet">
     <style>
         :root {
             --neon-pink: #ff00ff;
@@ -12,242 +13,215 @@
             --panel-bg: rgba(15, 2, 38, 0.9);
             --error-red: #ff3e3e;
             --success-green: #00ff88;
-            --cat-white: #fdfdfd;
-            --cat-pink: #ffb7c5;
-            --xp-purple: #8a2be2;
+            --gold: #ffd700;
         }
 
         body, html {
             margin: 0; padding: 0; width: 100%; height: 100%;
             overflow: hidden;
             background-color: var(--bg-dark);
-            font-family: 'Fredoka One', 'Segoe UI', cursive, sans-serif;
+            font-family: 'Fredoka One', cursive, sans-serif;
             color: white;
         }
 
-        #bg-canvas { position: fixed; top: 0; left: 0; z-index: -1; }
+        #bg-canvas, #fx-canvas { position: fixed; top: 0; left: 0; z-index: -1; pointer-events: none; }
+        #fx-canvas { z-index: 500; }
 
-        /* CARTOON INTRO */
-        #intro-overlay {
-            position: fixed; inset: 0; background: linear-gradient(135deg, #1a0b2e, #0a0118); 
-            z-index: 2000; display: flex; flex-direction: column; align-items: center; 
-            justify-content: center; transition: opacity 0.8s ease;
-        }
-        
-        #intro-city {
-            position: absolute; bottom: 0; width: 200%; height: 200px;
-            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 200"><path d="M0 200V150L50 120L80 150L120 100L160 150L200 80L250 150L300 110L350 160L400 90L450 150L500 120L550 150L600 100L650 160L700 80L750 140L800 100L850 150L900 110L950 150L1000 120V200H0Z" fill="%231a0b2e" opacity="0.5"/></svg>');
-            background-repeat: repeat-x; animation: city-scroll 20s linear infinite;
-        }
-        @keyframes city-scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
-
-        #intro-character {
-            width: 200px; height: 200px; transform: scale(0); transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            filter: drop-shadow(0 0 20px var(--neon-blue));
-        }
-        #intro-speech {
-            background: white; color: #333; padding: 15px 30px; border-radius: 20px;
-            position: relative; margin-top: 20px; font-weight: 900; font-size: 1.5rem;
-            opacity: 0; transform: translateY(20px); transition: all 0.4s;
-            max-width: 80%; text-align: center;
-        }
-        #intro-speech::after {
-            content: ''; position: absolute; top: -10px; left: 50%; transform: translateX(-50%);
-            border-left: 10px solid transparent; border-right: 10px solid transparent;
-            border-bottom: 10px solid white;
-        }
-        .hero-ready-btn {
-            background: var(--neon-pink); color: white; border: none; padding: 15px 40px;
-            border-radius: 50px; font-size: 1.2rem; font-weight: 900; cursor: pointer;
-            margin-top: 30px; box-shadow: 0 10px 0 #b000b0; transition: all 0.1s;
-            z-index: 2005; display: none;
-        }
-        .hero-ready-btn:active { transform: translateY(4px); box-shadow: 0 6px 0 #b000b0; }
-
-        /* Game Header */
         #game-header {
             width: 100%; height: 70px;
             background: var(--panel-bg);
-            display: flex; flex-direction: column; align-items: center;
-            padding: 5px 20px; box-sizing: border-box;
-            position: fixed; top: 0; z-index: 100; border-bottom: 2px solid rgba(255,255,255,0.05);
+            backdrop-filter: blur(10px);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 25px; box-sizing: border-box;
+            position: fixed; top: 0; z-index: 100;
+            border-bottom: 2px solid var(--neon-blue);
         }
-        .header-main { width: 100%; display: flex; justify-content: space-between; align-items: center; }
-        .xp-container { width: 100%; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden; margin-top: 5px; }
-        #xp-fill { width: 0%; height: 100%; background: var(--neon-blue); transition: width 0.4s; }
 
-        /* Game Stage */
+        .stats-group { display: flex; align-items: center; gap: 20px; }
+        .stat-item { display: flex; align-items: center; gap: 8px; font-size: 1.1rem; }
+        
+        #timer-display {
+            font-size: 1.8rem;
+            min-width: 80px;
+            text-align: center;
+            color: var(--success-green);
+            text-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+            font-variant-numeric: tabular-nums;
+        }
+        
+        #timer-display.warning {
+            color: var(--error-red);
+            text-shadow: 0 0 15px var(--error-red);
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        #intro-overlay, #level-up-overlay {
+            position: fixed; inset: 0; background: radial-gradient(circle, #1a0b2e, #0a0118); 
+            z-index: 2000; display: flex; flex-direction: column; align-items: center; 
+            justify-content: center; text-align: center; padding: 20px;
+        }
+
+        .input-field {
+            background: rgba(255,255,255,0.1);
+            border: 2px solid var(--neon-blue);
+            border-radius: 15px; padding: 12px 20px;
+            color: white; font-family: 'Fredoka One', cursive;
+            font-size: 1rem; width: 300px; margin-bottom: 20px; outline: none;
+        }
+
+        .hero-ready-btn {
+            background: var(--neon-blue); color: var(--bg-dark);
+            border: none; padding: 15px 40px; font-family: 'Fredoka One', cursive;
+            font-size: 1.5rem; border-radius: 50px; cursor: pointer;
+            box-shadow: 0 0 20px var(--neon-blue); transition: all 0.3s;
+            text-transform: uppercase; letter-spacing: 2px;
+        }
+        .hero-ready-btn:hover { transform: scale(1.05); filter: brightness(1.2); }
+
+        .skip-btn {
+            background: rgba(255,255,255,0.1); color: white;
+            border: 1px solid white; padding: 10px 25px; border-radius: 50px;
+            font-family: 'Fredoka One', cursive; cursor: pointer; margin-top: 20px;
+            transition: all 0.2s;
+        }
+
         #game-stage {
             height: 100vh; width: 100%;
-            display: flex; flex-direction: column;
+            display: none; flex-direction: column;
             align-items: center; justify-content: center;
-            opacity: 0; transition: opacity 1s; padding-top: 60px;
+            padding: 80px 20px; box-sizing: border-box;
         }
 
-        .sentence-box { font-size: 1.4rem; line-height: 1.4; max-width: 800px; text-align: center; margin-bottom: 20px; color: #ddd; }
-        .highlight-word { color: var(--neon-blue); font-weight: 900; background: rgba(0,255,255,0.1); padding: 2px 8px; border-radius: 5px; }
+        .sentence-box { font-size: 1.8rem; line-height: 1.5; max-width: 900px; text-align: center; margin-bottom: 40px; }
+        .highlight-word { color: var(--neon-blue); font-weight: 900; background: rgba(0,255,255,0.1); border-bottom: 3px solid var(--neon-blue); padding: 2px 10px; }
 
-        #word-slots { display: flex; gap: 6px; margin-bottom: 20px; justify-content: center; }
+        #word-slots { display: flex; gap: 8px; margin-bottom: 30px; justify-content: center; flex-wrap: wrap; }
         .slot {
-            width: 60px; height: 70px; background: rgba(255, 255, 255, 0.05);
-            border: 2px dashed rgba(255,255,255,0.2); border-radius: 12px;
+            width: 50px; height: 65px; background: rgba(255, 255, 255, 0.05);
+            border: 2px dashed rgba(255,255,255,0.3); border-radius: 10px;
             display: flex; align-items: center; justify-content: center;
             font-size: 1.8rem; font-weight: 900; cursor: pointer;
         }
-        .slot.filled { border-style: solid; border-color: var(--neon-blue); background: rgba(0,255,255,0.1); }
-
-        #letter-pool { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; max-width: 700px; }
+        .slot.filled { border-style: solid; border-color: var(--neon-blue); background: rgba(0,255,255,0.15); box-shadow: 0 0 10px var(--neon-blue); }
+        
+        #letter-pool { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; max-width: 800px; }
         .letter-tile {
-            width: 65px; height: 65px; background: linear-gradient(to bottom, #ff00ff, #b000b0);
+            width: 60px; height: 60px; background: linear-gradient(135deg, var(--neon-pink), #b000b0);
             border-radius: 15px; display: flex; align-items: center; justify-content: center;
             font-size: 2rem; font-weight: 900; cursor: pointer; 
-            box-shadow: 0 6px 0 #600060; transition: all 0.1s;
+            box-shadow: 0 4px 0 #600060; transition: transform 0.1s;
         }
-        .letter-tile:active { transform: translateY(4px); box-shadow: 0 2px 0 #600060; }
+        .letter-tile:active { transform: translateY(4px); box-shadow: 0 0 0 #600060; }
         .letter-tile.used { opacity: 0; pointer-events: none; transform: scale(0.5); }
 
-        /* High Paw */
-        #high-paw-container {
-            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0);
-            z-index: 1500; pointer-events: none; transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-        #high-paw-container.show { transform: translate(-50%, -50%) scale(2); }
-
-        /* Companion */
-        #companion-hub {
-            position: fixed; bottom: 15px; left: 50%; transform: translateX(-50%);
-            width: 90%; max-width: 500px; background: var(--panel-bg);
-            border-radius: 20px; display: flex; align-items: center; padding: 10px 20px;
-            border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(10px);
-        }
-        #cat-svg { width: 70px; height: 70px; flex-shrink: 0; }
-        #companion-msg { margin-left: 15px; font-size: 1rem; line-height: 1.2; }
-
-        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
-        .floating { animation: float 3s ease-in-out infinite; }
-        
-        #overlay, #level-overlay {
+        #overlay {
             position: fixed; inset: 0; background: rgba(0,0,0,0.95);
             display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 1000;
         }
+
+        .shake { animation: shake 0.2s ease-in-out 3; border-color: var(--error-red) !important; color: var(--error-red); }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-10px); } 75% { transform: translateX(10px); } }
     </style>
 </head>
 <body>
 
 <div id="intro-overlay">
-    <div id="intro-city"></div>
-    <div id="intro-character" class="floating">
-        <svg viewBox="0 0 100 100">
-            <path d="M20,30 L10,5 L35,20" fill="white" />
-            <path d="M80,30 L90,5 L65,20" fill="white" />
-            <circle cx="50" cy="55" r="40" fill="white" />
-            <circle cx="35" cy="50" r="5" fill="#222" />
-            <circle cx="65" cy="50" r="5" fill="#222" />
-            <path d="M45,65 Q50,70 55,65" fill="none" stroke="#222" stroke-width="3" stroke-linecap="round" />
-        </svg>
-    </div>
-    <div id="intro-speech">Meow! Ready to play?</div>
-    <button class="hero-ready-btn" id="start-btn" onclick="finishIntro()">START QUEST!</button>
+    <div style="font-size:4rem; margin-bottom:10px; color:var(--neon-pink); text-shadow: 0 0 20px var(--neon-pink);">NEKO QUEST</div>
+    <div style="font-size:1.8rem; color:var(--neon-blue); margin-bottom:30px;">Muddled Words Challenge</div>
+    <input type="email" id="user-email" class="input-field" placeholder="Enter your name">
+    <button class="hero-ready-btn" onclick="startQuest()">BEGIN MISSION</button>
+</div>
+
+<div id="level-up-overlay" style="display:none;">
+    <h1 style="font-size:3.5rem; color:var(--neon-blue);">LEVEL COMPLETE!</h1>
+    <p id="level-up-subtext" style="font-size:1.5rem;"></p>
+    <button class="hero-ready-btn" onclick="hideLevelUp()">NEXT LEVEL</button>
 </div>
 
 <canvas id="bg-canvas"></canvas>
+<canvas id="fx-canvas"></canvas>
 
 <div id="game-header">
-    <div class="header-main">
-        <div>
-            <span style="font-weight: 900; color: var(--neon-blue); letter-spacing: 1px;">NEKO QUEST</span>
-            <span id="level-tag" style="margin-left:10px; font-size: 0.7rem; background: var(--xp-purple); padding: 2px 8px; border-radius: 10px;">LVL 1</span>
-        </div>
-        <div style="display: flex; gap: 15px; font-weight: 900; font-size: 0.9rem;">
-            <span style="color: #ffd700;">💰 <span id="coins">0</span></span>
-            <span style="color: var(--neon-blue);">⏳ <span id="timer">60</span></span>
-            <span style="color: var(--neon-pink);">🔥 <span id="streak">0</span></span>
-        </div>
+    <div class="stats-group">
+        <div id="level-tag" style="color: var(--neon-blue); font-size: 1.5rem; font-weight: bold;">LEVEL 1</div>
+        <div id="timer-display">60s</div>
     </div>
-    <div class="xp-container"><div id="xp-fill"></div></div>
+    <div class="stats-group">
+        <div class="stat-item">💰 <span id="coins">0</span></div>
+        <div class="stat-item">✅ <span id="done-count">0</span>/30</div>
+    </div>
 </div>
 
 <div id="game-stage">
-    <div class="sentence-box" id="sentence-container">Loading...</div>
+    <div class="sentence-box" id="sentence-container"></div>
     <div id="word-slots"></div>
     <div id="letter-pool"></div>
-</div>
-
-<div id="high-paw-container">
-    <svg width="100" height="100" viewBox="0 0 100 100">
-        <circle cx="50" cy="70" r="25" fill="#ffb7c5" />
-        <circle cx="25" cy="40" r="10" fill="#ffb7c5" />
-        <circle cx="45" cy="30" r="12" fill="#ffb7c5" />
-        <circle cx="70" cy="35" r="11" fill="#ffb7c5" />
-        <circle cx="85" cy="55" r="9" fill="#ffb7c5" />
-    </svg>
-</div>
-
-<div id="companion-hub">
-    <div id="cat-svg">
-        <svg viewBox="0 0 100 100">
-            <path d="M25,35 L15,10 L40,25" fill="white" />
-            <path d="M75,35 L85,10 L60,25" fill="white" />
-            <circle cx="50" cy="55" r="35" fill="white" />
-            <circle cx="38" cy="55" r="4" fill="#222" />
-            <circle cx="62" cy="55" r="4" fill="#222" />
-            <path d="M45,68 Q50,72 55,68" fill="none" stroke="#222" stroke-width="2" id="cat-mouth" />
-        </svg>
-    </div>
-    <div id="companion-msg">"Let's untangle these words, meow!"</div>
+    <button class="skip-btn" id="skip-button" onclick="skipWord()">SKIP THIS WORD</button>
 </div>
 
 <div id="overlay">
     <div id="overlay-msg" style="text-align:center;"></div>
-    <button class="hero-ready-btn" style="display:block; margin: 30px auto;" onclick="nextQuestion()">NEXT WORD</button>
-</div>
-
-<div id="level-overlay">
-    <h1 style="font-size: 3rem; color: var(--neon-blue);">LEVEL UP!</h1>
-    <h2 id="level-title" style="color: var(--neon-pink);">WORD KITTEN</h2>
-    <button class="hero-ready-btn" style="display:block;" onclick="closeLevelOverlay()">MEOW-SOME!</button>
+    <button class="hero-ready-btn" id="overlay-continue-btn" style="margin-top:30px;" onclick="nextQuestion()">CONTINUE</button>
 </div>
 
 <script>
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    
     function playSound(type) {
         if (audioCtx.state === 'suspended') audioCtx.resume();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
         const now = audioCtx.currentTime;
-        if (type === 'cat-click') {
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.frequency.setValueAtTime(400, now);
-            osc.frequency.exponentialRampToValueAtTime(800, now + 0.1);
-            gain.gain.setValueAtTime(0.1, now);
-            gain.gain.linearRampToValueAtTime(0, now + 0.1);
-            osc.connect(gain); gain.connect(audioCtx.destination);
+        if (type === 'click') {
+            osc.type = 'sine'; osc.frequency.setValueAtTime(400, now); osc.frequency.exponentialRampToValueAtTime(100, now + 0.1);
+            gain.gain.setValueAtTime(0.1, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
             osc.start(); osc.stop(now + 0.1);
-        } else if (type === 'meow') {
-            const osc = audioCtx.createOscillator();
-            osc.type = 'sawtooth';
-            osc.frequency.setValueAtTime(400, now);
-            osc.frequency.exponentialRampToValueAtTime(600, now + 0.1);
-            osc.frequency.exponentialRampToValueAtTime(400, now + 0.4);
-            const g = audioCtx.createGain();
-            g.gain.setValueAtTime(0.05, now);
-            g.gain.linearRampToValueAtTime(0, now + 0.5);
-            osc.connect(g); g.connect(audioCtx.destination);
+        } else if (type === 'correct') {
+            osc.type = 'triangle'; osc.frequency.setValueAtTime(523.25, now); osc.frequency.setValueAtTime(659.25, now + 0.1); osc.frequency.setValueAtTime(783.99, now + 0.2);
+            gain.gain.setValueAtTime(0.1, now); gain.gain.linearRampToValueAtTime(0, now + 0.4);
+            osc.start(); osc.stop(now + 0.4);
+        } else if (type === 'wrong') {
+            osc.type = 'sawtooth'; osc.frequency.setValueAtTime(150, now); osc.frequency.linearRampToValueAtTime(50, now + 0.3);
+            gain.gain.setValueAtTime(0.1, now); gain.gain.linearRampToValueAtTime(0, now + 0.3);
+            osc.start(); osc.stop(now + 0.3);
+        } else if (type === 'levelup') {
+            osc.type = 'square'; osc.frequency.setValueAtTime(400, now); osc.frequency.exponentialRampToValueAtTime(800, now + 0.5);
+            gain.gain.setValueAtTime(0.05, now); gain.gain.linearRampToValueAtTime(0, now + 0.5);
             osc.start(); osc.stop(now + 0.5);
-        } else if (type === 'intro') {
-            [262, 330, 392, 523].forEach((f, i) => {
-                const o = audioCtx.createOscillator();
-                const g = audioCtx.createGain();
-                o.frequency.value = f;
-                g.gain.setValueAtTime(0.05, now + i*0.2);
-                g.gain.linearRampToValueAtTime(0, now + i*0.2 + 0.3);
-                o.connect(g); g.connect(audioCtx.destination);
-                o.start(now + i*0.2); o.stop(now + i*0.2 + 0.3);
-            });
         }
     }
 
-    const rawData = [
+    const fxCanvas = document.getElementById('fx-canvas');
+    const fctx = fxCanvas.getContext('2d');
+    let particles = [];
+    function resizeFx() { fxCanvas.width = window.innerWidth; fxCanvas.height = window.innerHeight; }
+    window.addEventListener('resize', resizeFx); resizeFx();
+    class Particle {
+        constructor() {
+            this.x = window.innerWidth / 2; this.y = window.innerHeight / 2; this.size = Math.random() * 8 + 4;
+            this.speedX = (Math.random() - 0.5) * 15; this.speedY = (Math.random() - 0.5) * 15 - 5;
+            this.color = `hsl(${Math.random() * 360}, 100%, 50%)`; this.gravity = 0.2; this.life = 1; this.decay = Math.random() * 0.02 + 0.01;
+        }
+        update() { this.speedY += this.gravity; this.x += this.speedX; this.y += this.speedY; this.life -= this.decay; }
+        draw() { fctx.fillStyle = this.color; fctx.globalAlpha = this.life; fctx.fillRect(this.x, this.y, this.size, this.size); }
+    }
+    function createConfetti() { for (let i = 0; i < 100; i++) particles.push(new Particle()); }
+    function animateFx() {
+        fctx.clearRect(0, 0, fxCanvas.width, fxCanvas.height);
+        for (let i = particles.length - 1; i >= 0; i--) { particles[i].update(); particles[i].draw(); if (particles[i].life <= 0) particles.splice(i, 1); }
+        requestAnimationFrame(animateFx);
+    }
+    animateFx();
+
+    // STRICTLY FROM PDF
+    const ALL_QUESTIONS = [
         { scrambled: "HCOLOS", target: "SCHOOL", sentence: "The _____ bus was late." },
         { scrambled: "BEZAR", target: "ZEBRA", sentence: "A _____ is an animal with stripes." },
         { scrambled: "KOBO", target: "BOOK", sentence: "I have lost my _____." },
@@ -257,171 +231,146 @@
         { scrambled: "TCNHEIK", target: "KITCHEN", sentence: "She put her apron on and went to the _____." },
         { scrambled: "ITOANTS", target: "STATION", sentence: "We had to be at the _____ by six." },
         { scrambled: "MENTIU", target: "MINUTE", sentence: "He scored the final goal in the last _____ of the game." },
-        { scrambled: "ZIAMANEG", target: "MAGAZINE", sentence: "Dad read the _____ before going to bed." }
+        { scrambled: "ZIAMANEG", target: "MAGAZINE", sentence: "Dad read the _____ before going to bed." },
+        { scrambled: "NOBLALO", target: "BALLOON", sentence: "The _____ floated into the sky." },
+        { scrambled: "DOGBELB", target: "GOBBLED", sentence: "He _____ the pudding greedily." },
+        { scrambled: "PLAYHIP", target: "HAPPILY", sentence: "The fairy tale ended with them all living _____ ever after." },
+        { scrambled: "SEALPIC", target: "SPECIAL", sentence: "Each week there is a _____ offer at super market." },
+        { scrambled: "CGTNHIILO", target: "CLOTHING", sentence: "Astronauts wear specials _____ when travelling in space." },
+        { scrambled: "SUNYRER", target: "NURSERY", sentence: "Little children enjoy going to _____ each day." },
+        { scrambled: "ABATEKFRS", target: "BREAKFAST", sentence: "What is your favourite _____ cereal?" },
+        { scrambled: "NEEVOPSLE", target: "ENVELOPES", sentence: "We put letters in _____." },
+        { scrambled: "TAUTSERARNS", target: "RESTAURANTS", sentence: "There are many Chinese _____ in my neighbourhood." },
+        { scrambled: "PSINGKIP", target: "SKIPPING", sentence: "_____ can keep you fit." },
+        { scrambled: "LBWNOGI", target: "BOWLING", sentence: "They all went to the _____ except Aadil." },
+        { scrambled: "ROEYNVEE", target: "EVERYONE", sentence: "_____ except Charlie went in taxi." },
+        { scrambled: "SIVETIESN", target: "SENSITIVE", sentence: "The burn on my hand was _____ to touch." },
+        { scrambled: "LAVFROU", target: "FLAVOUR", sentence: "Chocolate is my favourite _____ ice cream." },
+        { scrambled: "EIDCCDET", target: "DECIDED", sentence: "Aadil _____ to stay home and read." },
+        { scrambled: "KNOWHNER", target: "HORNPIPE", sentence: "He was dancing the _____." },
+        { scrambled: "RCMPEOUT", target: "COMPUTER", sentence: "Aadil had to use _____ for his homework." },
+        { scrambled: "LIPCAAT", target: "CAPITAL", sentence: "Proper nouns should always start with a _____ letter." },
+        { scrambled: "MOBHRAOT", target: "BATHROOM", sentence: "Why have you left your clothes in the _____." },
+        { scrambled: "DUSTEHEXA", target: "EXHAUSTED", sentence: "She was _____ after the race." },
+        { scrambled: "GLETDIN", target: "TINGLED", sentence: "The cold _____ her fingers." },
+        { scrambled: "REDCA", target: "RACED", sentence: "Eathan _____ round the track on his bike." },
+        { scrambled: "TESKI", target: "KITES", sentence: "It was a windy day, perfect for flying _____." },
+        { scrambled: "TISETND", target: "DENTIST", sentence: "They all had to go the _____ for a check-up." },
+        { scrambled: "PLAYNET", target: "PENALTY", sentence: "The team scored after a _____ was given." },
+        { scrambled: "TREEMLEYX", target: "EXTREMELY", sentence: "Both wild animals were _____ fierce." },
+        { scrambled: "CGREOYR", target: "GROCERY", sentence: "My corner _____ shop is open until late in night." },
+        { scrambled: "EIFKN", target: "KNIFE", sentence: "Be careful otherwise you can get cut by _____." },
+        { scrambled: "NOITUNMA", target: "MOUNTAIN", sentence: "From the _____ they could see for miles." },
+        { scrambled: "SCCHATRED", target: "SCRATCHED", sentence: "The kittens _____ the new furniture." },
+        { scrambled: "EVICETTED", target: "DETECTIVE", sentence: "The crime scene was inspected by the _____." },
+        { scrambled: "ECCAPKOS", target: "PEACOCKS", sentence: "The proud _____ strutted about the lawns." },
+        { scrambled: "HOAMNART", target: "MARATHON", sentence: "They cheered the runners as they watched the _____." },
+        { scrambled: "OURHAT", target: "AUTHOR", sentence: "The _____ became very popular after this new book." },
+        { scrambled: "ETALPICAHABL", target: "ALPHABETICAL", sentence: "The books were arranged in _____ order." },
+        { scrambled: "STROFE", target: "FOREST", sentence: "It was dark and quit in the middle of the _____." },
+        { scrambled: "CHOIRST", target: "OSTRICH", sentence: "The _____ is a very fast bird." },
+        { scrambled: "TARTSURENA", target: "RESTAURANT", sentence: "They had a special meal in the new _____." },
+        { scrambled: "BEADROWR", target: "WARDROBE", sentence: "She looked in her _____ to find the red dress." },
+        { scrambled: "PEVLONEE", target: "ENVELOPE", sentence: "Folding and putting each leaflet in an _____." },
+        { scrambled: "EHTEELPHN", target: "TELEPHONE", sentence: "The _____ rang loudly." },
+        { scrambled: "YRADICITON", target: "DICTIONARY", sentence: "Aadil looked the word up in his _____." }
     ];
 
-    let playlist = [], currentIndex = 0, totalCoins = 0, streak = 0, timer = 60, timerId = null, currentInput = [], isTransitioning = false;
-    let xp = 0, level = 1;
-    const levelTitles = ["NOVICE", "WORD KITTEN", "SPELLING CAT", "LEXICON LYNX", "NEKO MASTER"];
+    let sessionPool = [], skipPool = [], currentIndex = 0;
+    let totalCoins = 0, currentInput = [], isTransitioning = false, level = 1, userName = "", attempted = 0;
+    let timeLeft = 60, timerInterval, isRematchRound = false;
 
-    // INTRO FLOW
-    function startIntro() {
-        if (sessionStorage.getItem('nekoIntroSkipped')) {
-            finishIntro();
-            return;
-        }
-        setTimeout(() => {
-            document.getElementById('intro-character').style.transform = 'scale(1)';
-            playSound('intro');
-            playSequence();
-        }, 500);
-    }
-
-    const introSteps = [
-        "Welcome to Neko Quest!",
-        "The market is a mess...",
-        "Help me fix the words!",
-        "Are you ready?"
-    ];
-    let step = 0;
-    function playSequence() {
-        const speech = document.getElementById('intro-speech');
-        speech.style.opacity = '1';
-        speech.style.transform = 'translateY(0)';
-        speech.innerText = introSteps[step];
-        
-        if (step < introSteps.length - 1) {
-            step++;
-            setTimeout(playSequence, 2000);
-        } else {
-            document.getElementById('start-btn').style.display = 'block';
-        }
-    }
-
-    function finishIntro() {
-        sessionStorage.setItem('nekoIntroSkipped', 'true');
-        document.getElementById('intro-overlay').style.opacity = '0';
-        setTimeout(() => {
-            document.getElementById('intro-overlay').style.display = 'none';
-            document.getElementById('game-stage').style.opacity = '1';
-            initGame();
-        }, 800);
-    }
-
-    function initGame() {
-        playlist = [...rawData].sort(() => Math.random() - 0.5);
+    function startQuest() {
+        userName = document.getElementById('user-email').value || "Guest";
+        // Get 30 random ones from the 53 available
+        sessionPool = [...ALL_QUESTIONS].sort(() => Math.random() - 0.5).slice(0, 30);
+        document.getElementById('intro-overlay').style.display = 'none';
+        document.getElementById('game-stage').style.display = 'flex';
         loadQuest();
     }
 
     function loadQuest() {
-        if (currentIndex >= playlist.length) { showFinal(); return; }
-        isTransitioning = false;
-        const q = playlist[currentIndex];
+        if (currentIndex >= sessionPool.length) {
+            if (skipPool.length > 0) {
+                isRematchRound = true; sessionPool = [...skipPool]; skipPool = []; currentIndex = 0;
+                document.getElementById('skip-button').style.display = 'none';
+                document.getElementById('overlay-msg').innerHTML = `<h2 style="color:var(--gold)">REMATCH!</h2><p>Finish the ones you skipped.</p>`;
+                document.getElementById('overlay').style.display = 'flex';
+                return;
+            } else { showFinal(); return; }
+        }
+        isTransitioning = false; currentInput = [];
+        const q = sessionPool[currentIndex];
+        timeLeft = 60;
+        const display = document.getElementById('timer-display'); display.innerText = "60s"; display.classList.remove('warning');
+        clearInterval(timerInterval); timerInterval = setInterval(updateTimer, 1000);
         document.getElementById('sentence-container').innerHTML = q.sentence.replace("_____", `<span class="highlight-word">${q.scrambled}</span>`);
-        
-        const slots = document.getElementById('word-slots');
-        const pool = document.getElementById('letter-pool');
+        const slots = document.getElementById('word-slots'), pool = document.getElementById('letter-pool');
         slots.innerHTML = ""; pool.innerHTML = "";
-        currentInput = [];
-
-        q.target.split('').forEach((_, i) => {
-            const s = document.createElement('div'); s.className = 'slot';
-            s.onclick = () => removeLetter(i); slots.appendChild(s);
-        });
-
-        q.scrambled.split('').forEach((char, i) => {
-            const t = document.createElement('div'); t.className = 'letter-tile';
-            t.innerText = char; t.onclick = () => addLetter(char, i); pool.appendChild(t);
-        });
-        startTimer();
+        q.target.split('').forEach((_, i) => { const s = document.createElement('div'); s.className = 'slot'; s.onclick = () => removeLetter(i); slots.appendChild(s); });
+        q.scrambled.split('').forEach((char, i) => { const t = document.createElement('div'); t.className = 'letter-tile'; t.innerText = char; t.onclick = () => addLetter(char, i); pool.appendChild(t); });
     }
 
-    function addLetter(char, idx) {
+    function updateTimer() {
         if (isTransitioning) return;
-        playSound('cat-click');
-        const q = playlist[currentIndex];
-        if (currentInput.length < q.target.length) {
-            currentInput.push({char, idx});
-            const s = document.querySelectorAll('.slot')[currentInput.length - 1];
-            s.innerText = char; s.classList.add('filled');
-            document.querySelectorAll('.letter-tile')[idx].classList.add('used');
-            if (currentInput.length === q.target.length) check();
-        }
+        timeLeft--;
+        const display = document.getElementById('timer-display'); display.innerText = timeLeft + "s";
+        if (timeLeft <= 15) display.classList.add('warning'); else display.classList.remove('warning');
+        if (timeLeft <= 0) { clearInterval(timerInterval); timeOut(); }
+    }
+
+    function timeOut() {
+        isTransitioning = true; playSound('wrong');
+        document.getElementById('overlay-msg').innerHTML = `<h2 style="color:var(--error-red)">TIME'S UP!</h2><p>Correct: <b style="color:var(--neon-blue)">${sessionPool[currentIndex].target}</b></p>`;
+        document.getElementById('overlay').style.display = 'flex';
+    }
+
+    function skipWord() { if (isTransitioning || isRematchRound) return; playSound('click'); skipPool.push(sessionPool[currentIndex]); currentIndex++; loadQuest(); }
+
+    function addLetter(char, idx) {
+        if (isTransitioning || currentInput.length >= sessionPool[currentIndex].target.length) return;
+        playSound('click'); currentInput.push({char, idx});
+        const slots = document.querySelectorAll('.slot');
+        slots[currentInput.length-1].innerText = char; slots[currentInput.length-1].classList.add('filled');
+        document.querySelectorAll('.letter-tile')[idx].classList.add('used');
+        if (currentInput.length === sessionPool[currentIndex].target.length) check();
     }
 
     function removeLetter(idx) {
         if (isTransitioning || idx >= currentInput.length) return;
-        playSound('cat-click');
-        const removed = currentInput.splice(idx);
-        const slots = document.querySelectorAll('.slot');
-        const tiles = document.querySelectorAll('.letter-tile');
-        removed.forEach((item, i) => {
-            const s = slots[idx + i]; s.innerText = ""; s.classList.remove('filled');
-            tiles[item.idx].classList.remove('used');
-        });
+        playSound('click'); const removed = currentInput.splice(idx);
+        const slots = document.querySelectorAll('.slot'), tiles = document.querySelectorAll('.letter-tile');
+        removed.forEach((item, i) => { slots[idx+i].innerText = ""; slots[idx+i].classList.remove('filled'); tiles[item.idx].classList.remove('used'); });
     }
 
     function check() {
-        isTransitioning = true; clearInterval(timerId);
-        const target = playlist[currentIndex].target;
-        const entered = currentInput.map(i => i.char).join('');
+        isTransitioning = true; clearInterval(timerInterval);
+        const target = sessionPool[currentIndex].target, entered = currentInput.map(i => i.char).join('');
         if (entered === target) {
-            streak++; totalCoins += 50; xp += 20;
-            document.getElementById('streak').innerText = streak;
-            document.getElementById('coins').innerText = totalCoins;
-            updateXP();
-            playSound('meow');
-            updateCompanion("Purr-fect!", true);
-            setTimeout(() => { currentIndex++; loadQuest(); }, 1000);
+            playSound('correct'); createConfetti(); attempted++; totalCoins += isRematchRound ? 20 : 50; updateStats();
+            if (!isRematchRound && attempted > 0 && attempted % 6 === 0 && level < 5) showLevelUp(); else setTimeout(() => { currentIndex++; loadQuest(); }, 800);
         } else {
-            streak = 0; document.getElementById('streak').innerText = streak;
-            document.querySelectorAll('.slot').forEach(s => s.style.borderColor = 'red');
-            updateCompanion("Not quite, meow...", false);
-            setTimeout(() => {
-                document.getElementById('overlay-msg').innerHTML = `<h2>The word was:</h2><h1 style="color:var(--neon-blue); font-size:3rem;">${target}</h1>`;
-                document.getElementById('overlay').style.display = 'flex';
-            }, 800);
+            playSound('wrong'); document.querySelectorAll('.slot').forEach(s => s.classList.add('shake'));
+            setTimeout(() => { document.getElementById('overlay-msg').innerHTML = `<h2>NOT QUITE!</h2><p>Correct: <b style="color:var(--neon-blue)">${target}</b></p>`; document.getElementById('overlay').style.display = 'flex'; }, 600);
         }
     }
 
-    function updateXP() {
-        if (xp >= 100) { xp = 0; level++; showLevelUp(); }
-        document.getElementById('xp-fill').style.width = xp + "%";
-        document.getElementById('level-tag').innerText = `LVL ${level}`;
-    }
-
-    function showLevelUp() {
-        const paw = document.getElementById('high-paw-container');
-        paw.classList.add('show');
-        setTimeout(() => {
-            paw.classList.remove('show');
-            document.getElementById('level-title').innerText = levelTitles[Math.min(level-1, 4)];
-            document.getElementById('level-overlay').style.display = 'flex';
-        }, 1200);
-    }
-
-    function closeLevelOverlay() { document.getElementById('level-overlay').style.display = 'none'; }
-    function nextQuestion() { document.getElementById('overlay').style.display = 'none'; currentIndex++; loadQuest(); }
-
-    function startTimer() {
-        clearInterval(timerId); timer = 60; document.getElementById('timer').innerText = timer;
-        timerId = setInterval(() => {
-            timer--; document.getElementById('timer').innerText = timer;
-            if (timer <= 0) check();
-        }, 1000);
-    }
-
-    function updateCompanion(msg, win) {
-        document.getElementById('companion-msg').innerText = `"${msg}"`;
-        const mouth = document.getElementById('cat-mouth');
-        mouth.setAttribute('d', win ? 'M45,65 Q50,75 55,65' : 'M45,72 Q50,68 55,72');
-    }
+    function showLevelUp() { level++; playSound('levelup'); document.getElementById('level-up-subtext').innerText = `Level ${level} Unlocked!`; document.getElementById('level-up-overlay').style.display = 'flex'; }
+    function hideLevelUp() { playSound('click'); document.getElementById('level-up-overlay').style.display = 'none'; document.getElementById('level-tag').innerText = `LEVEL ${level}`; currentIndex++; loadQuest(); }
+    function updateStats() { document.getElementById('coins').innerText = totalCoins; document.getElementById('done-count').innerText = Math.min(attempted, 30); }
+    function nextQuestion() { playSound('click'); document.getElementById('overlay').style.display='none'; currentIndex++; updateStats(); loadQuest(); }
 
     function showFinal() {
-        document.body.innerHTML = `<div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100vh; text-align:center;">
-            <h1 style="font-size:3rem; color:var(--neon-pink);">QUEST COMPLETE!</h1>
-            <p>You earned ${totalCoins} coins!</p>
-            <button onclick="location.reload()" class="hero-ready-btn" style="display:block;">PLAY AGAIN</button>
+        playSound('levelup'); createConfetti();
+        document.body.innerHTML = `
+        <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; background:var(--bg-dark); padding:20px;">
+            <div style="background: white; color: #1a0b2e; padding: 40px; border-radius: 30px; border: 15px solid var(--neon-blue); max-width: 700px; width: 90%; text-align: center;">
+                <h1 style="color:var(--neon-pink)">QUEST COMPLETE!</h1>
+                <h2>Congratulations, ${userName}!</h2>
+                <div style="font-size:2rem; margin:20px 0;">💰 Total Score: ${totalCoins}</div>
+                <div style="background:var(--neon-blue); color:var(--bg-dark); padding:15px; border-radius:10px; font-weight:bold;">MISSION ACCOMPLISHED!</div>
+            </div>
+            <button onclick="location.reload()" class="hero-ready-btn" style="margin-top:30px;">RESTART</button>
         </div>`;
     }
 
@@ -429,15 +378,9 @@
     function resize() { bg.width = window.innerWidth; bg.height = window.innerHeight; }
     window.onresize = resize; resize();
     let stars = [];
-    for(let i=0; i<80; i++) stars.push({x: Math.random()*2000, y: Math.random()*2000, s: Math.random()*2});
-    function animate() {
-        bctx.fillStyle = '#0a0118'; bctx.fillRect(0,0,bg.width,bg.height);
-        bctx.fillStyle = 'white';
-        stars.forEach(s => { bctx.beginPath(); bctx.arc(s.x % bg.width, s.y % bg.height, s.s, 0, Math.PI*2); bctx.fill(); s.y += 0.2; });
-        requestAnimationFrame(animate);
-    }
-
-    window.onload = () => { startIntro(); animate(); };
+    for(let i=0; i<100; i++) stars.push({x: Math.random()*2000, y: Math.random()*2000, s: Math.random()*2});
+    function animate() { bctx.fillStyle = '#0a0118'; bctx.fillRect(0,0,bg.width,bg.height); bctx.fillStyle = 'white'; stars.forEach(s => { bctx.beginPath(); bctx.arc(s.x % bg.width, s.y % bg.height, s.s, 0, Math.PI*2); bctx.fill(); s.y += 0.3; }); requestAnimationFrame(animate); }
+    animate();
 </script>
 </body>
 </html>
