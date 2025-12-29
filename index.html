@@ -154,7 +154,7 @@
     </div>
     <div class="stats-group">
         <div class="stat-item">💰 <span id="coins">0</span></div>
-        <div class="stat-item">✅ <span id="done-count">0</span>/30</div>
+        <div class="stat-item">✅ <span id="done-count">0</span>/75</div>
     </div>
 </div>
 
@@ -220,60 +220,83 @@
     }
     animateFx();
 
-    // STRICTLY FROM PDF
-    const ALL_QUESTIONS = [
-        { scrambled: "HCOLOS", target: "SCHOOL", sentence: "The _____ bus was late." },
-        { scrambled: "BEZAR", target: "ZEBRA", sentence: "A _____ is an animal with stripes." },
-        { scrambled: "KOBO", target: "BOOK", sentence: "I have lost my _____." },
-        { scrambled: "NEPICL", target: "PENCIL", sentence: "Where is my _____?" },
-        { scrambled: "YRATP", target: "PARTY", sentence: "What time is the _____?" },
-        { scrambled: "RETES", target: "TREES", sentence: "I have big _____ in my garden." },
-        { scrambled: "TCNHEIK", target: "KITCHEN", sentence: "She put her apron on and went to the _____." },
-        { scrambled: "ITOANTS", target: "STATION", sentence: "We had to be at the _____ by six." },
-        { scrambled: "MENTIU", target: "MINUTE", sentence: "He scored the final goal in the last _____ of the game." },
-        { scrambled: "ZIAMANEG", target: "MAGAZINE", sentence: "Dad read the _____ before going to bed." },
-        { scrambled: "NOBLALO", target: "BALLOON", sentence: "The _____ floated into the sky." },
-        { scrambled: "DOGBELB", target: "GOBBLED", sentence: "He _____ the pudding greedily." },
-        { scrambled: "PLAYHIP", target: "HAPPILY", sentence: "The fairy tale ended with them all living _____ ever after." },
-        { scrambled: "SEALPIC", target: "SPECIAL", sentence: "Each week there is a _____ offer at super market." },
-        { scrambled: "CGTNHIILO", target: "CLOTHING", sentence: "Astronauts wear specials _____ when travelling in space." },
-        { scrambled: "SUNYRER", target: "NURSERY", sentence: "Little children enjoy going to _____ each day." },
-        { scrambled: "ABATEKFRS", target: "BREAKFAST", sentence: "What is your favourite _____ cereal?" },
-        { scrambled: "NEEVOPSLE", target: "ENVELOPES", sentence: "We put letters in _____." },
-        { scrambled: "TAUTSERARNS", target: "RESTAURANTS", sentence: "There are many Chinese _____ in my neighbourhood." },
-        { scrambled: "PSINGKIP", target: "SKIPPING", sentence: "_____ can keep you fit." },
-        { scrambled: "LBWNOGI", target: "BOWLING", sentence: "They all went to the _____ except Aadil." },
-        { scrambled: "ROEYNVEE", target: "EVERYONE", sentence: "_____ except Charlie went in taxi." },
-        { scrambled: "SIVETIESN", target: "SENSITIVE", sentence: "The burn on my hand was _____ to touch." },
-        { scrambled: "LAVFROU", target: "FLAVOUR", sentence: "Chocolate is my favourite _____ ice cream." },
-        { scrambled: "EIDCCDET", target: "DECIDED", sentence: "Aadil _____ to stay home and read." },
-        { scrambled: "KNOWHNER", target: "HORNPIPE", sentence: "He was dancing the _____." },
-        { scrambled: "RCMPEOUT", target: "COMPUTER", sentence: "Aadil had to use _____ for his homework." },
-        { scrambled: "LIPCAAT", target: "CAPITAL", sentence: "Proper nouns should always start with a _____ letter." },
-        { scrambled: "MOBHRAOT", target: "BATHROOM", sentence: "Why have you left your clothes in the _____." },
-        { scrambled: "DUSTEHEXA", target: "EXHAUSTED", sentence: "She was _____ after the race." },
-        { scrambled: "GLETDIN", target: "TINGLED", sentence: "The cold _____ her fingers." },
-        { scrambled: "REDCA", target: "RACED", sentence: "Eathan _____ round the track on his bike." },
-        { scrambled: "TESKI", target: "KITES", sentence: "It was a windy day, perfect for flying _____." },
-        { scrambled: "TISETND", target: "DENTIST", sentence: "They all had to go the _____ for a check-up." },
-        { scrambled: "PLAYNET", target: "PENALTY", sentence: "The team scored after a _____ was given." },
-        { scrambled: "TREEMLEYX", target: "EXTREMELY", sentence: "Both wild animals were _____ fierce." },
-        { scrambled: "CGREOYR", target: "GROCERY", sentence: "My corner _____ shop is open until late in night." },
-        { scrambled: "EIFKN", target: "KNIFE", sentence: "Be careful otherwise you can get cut by _____." },
-        { scrambled: "NOITUNMA", target: "MOUNTAIN", sentence: "From the _____ they could see for miles." },
-        { scrambled: "SCCHATRED", target: "SCRATCHED", sentence: "The kittens _____ the new furniture." },
-        { scrambled: "EVICETTED", target: "DETECTIVE", sentence: "The crime scene was inspected by the _____." },
-        { scrambled: "ECCAPKOS", target: "PEACOCKS", sentence: "The proud _____ strutted about the lawns." },
-        { scrambled: "HOAMNART", target: "MARATHON", sentence: "They cheered the runners as they watched the _____." },
-        { scrambled: "OURHAT", target: "AUTHOR", sentence: "The _____ became very popular after this new book." },
-        { scrambled: "ETALPICAHABL", target: "ALPHABETICAL", sentence: "The books were arranged in _____ order." },
-        { scrambled: "STROFE", target: "FOREST", sentence: "It was dark and quit in the middle of the _____." },
-        { scrambled: "CHOIRST", target: "OSTRICH", sentence: "The _____ is a very fast bird." },
-        { scrambled: "TARTSURENA", target: "RESTAURANT", sentence: "They had a special meal in the new _____." },
-        { scrambled: "BEADROWR", target: "WARDROBE", sentence: "She looked in her _____ to find the red dress." },
-        { scrambled: "PEVLONEE", target: "ENVELOPE", sentence: "Folding and putting each leaflet in an _____." },
-        { scrambled: "EHTEELPHN", target: "TELEPHONE", sentence: "The _____ rang loudly." },
-        { scrambled: "YRADICITON", target: "DICTIONARY", sentence: "Aadil looked the word up in his _____." }
+// STRICTLY 75 QUESTIONS FROM PDF
+const ALL_QUESTIONS = [
+    { scrambled: "HCOLOS", target: "SCHOOL", sentence: "The _____ bus was late." },
+    { scrambled: "BEZAR", target: "ZEBRA", sentence: "A _____ is an animal with stripes." },
+    { scrambled: "KOBO", target: "BOOK", sentence: "I have lost my _____." },
+    { scrambled: "NEPICL", target: "PENCIL", sentence: "Where is my _____?" },
+    { scrambled: "YRATP", target: "PARTY", sentence: "What time is the _____?" },
+    { scrambled: "RETES", target: "TREES", sentence: "I have big _____ in my garden." },
+    { scrambled: "TCNHEIK", target: "KITCHEN", sentence: "She put her apron on and went to the _____." },
+    { scrambled: "ITOANTS", target: "STATION", sentence: "We had to be at the _____ by six." },
+    { scrambled: "MENTIU", target: "MINUTE", sentence: "He scored the final goal in the last _____ of the game." },
+    { scrambled: "ZIAMANEG", target: "MAGAZINE", sentence: "Dad read the _____ before going to bed." },
+    { scrambled: "NOBLALO", target: "BALLOON", sentence: "The _____ floated into the sky." },
+    { scrambled: "DOGBELB", target: "GOBBLED", sentence: "He _____ the pudding greedily." },
+    { scrambled: "PLAYHIP", target: "HAPPILY", sentence: "The fairy tale ended with them all living _____ ever after." },
+    { scrambled: "SEALPIC", target: "SPECIAL", sentence: "Each week there is a _____ offer at super market." },
+    { scrambled: "CGTNHIILO", target: "CLOTHING", sentence: "Astronauts wear specials _____ when travelling in space." },
+    { scrambled: "SUNYRER", target: "NURSERY", sentence: "Little children enjoy going to _____ each day." },
+    { scrambled: "ABATEKFRS", target: "BREAKFAST", sentence: "What is your favourite _____ cereal?" },
+    { scrambled: "NEEVOPSLE", target: "ENVELOPES", sentence: "We put letters in _____." },
+    { scrambled: "TAUTSERARNS", target: "RESTAURANTS", sentence: "There are many Chinese _____ in my neighbourhood." },
+    { scrambled: "PSINGKIP", target: "SKIPPING", sentence: "_____ can keep you fit." },
+    { scrambled: "LBWNOGI", target: "BOWLING", sentence: "They all went to the _____ except Aadil." },
+    { scrambled: "ROEYNVEE", target: "EVERYONE", sentence: "_____ except Charlie went in taxi." },
+    { scrambled: "SIVETIESN", target: "SENSITIVE", sentence: "The burn on my hand was _____ to touch." },
+    { scrambled: "OHIYDSAL", target: "HOLIDAYS", sentence: "The children were looking forward to the _____." },
+    { scrambled: "SWANSDHCIE", target: "SANDWICHES", sentence: "_____ are mostly available in all the stores." },
+    { scrambled: "TIKEHNC", target: "KITCHEN", sentence: "A lovely smell was wafting out of the _____." },
+    { scrambled: "NGEIENV", target: "EVENING", sentence: "My mum likes a cup of coffee in the _____." },
+    { scrambled: "UATIFEULB", target: "BEAUTIFUL", sentence: "It was _____ bunch of flowers." },
+    { scrambled: "ADGENBA", target: "BANDAGE", sentence: "There was a _____ on his bad leg." },
+    { scrambled: "KAEPNASC", target: "PANCAKES", sentence: "On Shrove Tuesday, they ate _____." },
+    { scrambled: "NIECAM", target: "CINEMA", sentence: "They went to the _____ to see their favourite film." },
+    { scrambled: "EONYJUR", target: "JOURNEY", sentence: "They were tired after the long _____." },
+    { scrambled: "NJALMAS", target: "ANIMALS", sentence: "The _____ were very tame." },
+    { scrambled: "LABIZRZD", target: "BLIZZARD", sentence: "Many cars were stranded in the _____." },
+    { scrambled: "ORESENGHUE", target: "GREENHOUSE", sentence: "The tomato plants grew in the _____." },
+    { scrambled: "ICTAITIEVS", target: "ACTIVITIES", sentence: "On which school days Kim does not have any _____." },
+    { scrambled: "LEBNLAT", target: "NETBALL", sentence: "The girl's _____ team cheered when they won the match." },
+    { scrambled: "LSEPAE", target: "PLEASE", sentence: "_____ hurry or we are going to be late for the show." },
+    { scrambled: "NRESGSAPES", target: "PASSENGERS", sentence: "The pilot asked the _____ to stay in their seats." },
+    { scrambled: "NGIMISMW", target: "SWIMMING", sentence: "Ronem has his _____ lesson on every Tuesday." },
+    { scrambled: "RIYRABL", target: "LIBRARY", sentence: "Our local _____ has good collection of reference books." },
+    { scrambled: "WISMRREM", target: "SWIMMERS", sentence: "The _____ dived into the pool." },
+    { scrambled: "KDCITE", target: "TICKED", sentence: "The clock _____ on the shelf." },
+    { scrambled: "EUOSDTI", target: "OUTSIDE", sentence: "There is cold wind blowing _____." },
+    { scrambled: "AEPADR", target: "PARADE", sentence: "The police closed off the street for the _____." },
+    { scrambled: "RCMPEOUT", target: "COMPUTER", sentence: "Mike needed to use _____ for his homework." },
+    { scrambled: "LIPCAAT", target: "CAPITAL", sentence: "Proper nouns should always start with a _____ letter." },
+    { scrambled: "MOBHRAOT", target: "BATHROOM", sentence: "Why have you left your clothes in the _____." },
+    { scrambled: "DUSTEHEXA", target: "EXHAUSTED", sentence: "She was _____ after the race." },
+    { scrambled: "GLETDIN", target: "TINGLED", sentence: "The cold _____ her fingers." },
+    { scrambled: "REDCA", target: "RACED", sentence: "Eathan _____ round the track on his bike." },
+    { scrambled: "TESKI", target: "KITES", sentence: "It was a windy day, perfect for flying _____." },
+    { scrambled: "TISETND", target: "DENTIST", sentence: "They all had to go the _____ for a check-up." },
+    { scrambled: "PLAYNET", target: "PENALTY", sentence: "The team scored after a _____ was given." },
+    { scrambled: "TREEMLEYX", target: "EXTREMELY", sentence: "Both wild animals were _____ fierce." },
+    { scrambled: "CGREOYR", target: "GROCERY", sentence: "My corner _____ shop is open until late in night." },
+    { scrambled: "EIFKN", target: "KNIFE", sentence: "Be careful otherwise you can get cut by _____." },
+    { scrambled: "NOITUNMA", target: "MOUNTAIN", sentence: "From the _____ they could see for miles." },
+    { scrambled: "SCCHATRED", target: "SCRATCHED", sentence: "The kittens _____ the new furniture." },
+    { scrambled: "EVICETTED", target: "DETECTIVE", sentence: "The crime scene was inspected by the _____." },
+    { scrambled: "ECCAPKOS", target: "PEACOCKS", sentence: "The proud _____ strutted about the lawns." },
+    { scrambled: "HOAMNART", target: "MARATHON", sentence: "They cheered the runners as they watched the _____." },
+    { scrambled: "OURHAT", target: "AUTHOR", sentence: "The _____ became very popular after this new book." },
+    { scrambled: "ETALPICAHABL", target: "ALPHABETICAL", sentence: "The books were arranged in _____ order." },
+    { scrambled: "STROFE", target: "FOREST", sentence: "It was dark and quit in the middle of the _____." },
+    { scrambled: "CHOIRST", target: "OSTRICH", sentence: "The _____ is a very fast bird." },
+    { scrambled: "TARTSURENA", target: "RESTAURANT", sentence: "They had a special meal in the new _____." },
+    { scrambled: "BEADROWR", target: "WARDROBE", sentence: "She looked in her _____ to find the red dress." },
+    { scrambled: "PEELOVEN", target: "ENVELOPE", sentence: "Folding and putting each leaflet in an _____ took a long time." },
+    { scrambled: "INEPTMOOTIC", target: "COMPETITION", sentence: "They decided to enter the _____." },
+    { scrambled: "AKWELD", target: "WALKED", sentence: "The two children _____ down the lane." },
+    { scrambled: "CYASR", target: "SCARY", sentence: "The programme was too _____ for young children." },
+    { scrambled: "EJNRIDU", target: "INJURED", sentence: "Luckily, she wasn't _____ in the accident." },
+    { scrambled: "ETSRE", target: "TREES", sentence: "Olives grow on _____." },
+    { scrambled: "UDEIG", target: "GUIDE", sentence: "_____ means to escort someone." }
     ];
 
     let sessionPool = [], skipPool = [], currentIndex = 0;
@@ -282,8 +305,7 @@
 
     function startQuest() {
         userName = document.getElementById('user-email').value || "Guest";
-        // Get 30 random ones from the 53 available
-        sessionPool = [...ALL_QUESTIONS].sort(() => Math.random() - 0.5).slice(0, 30);
+        sessionPool = [...ALL_QUESTIONS].sort(() => Math.random() - 0.5);
         document.getElementById('intro-overlay').style.display = 'none';
         document.getElementById('game-stage').style.display = 'flex';
         loadQuest();
@@ -348,7 +370,7 @@
         const target = sessionPool[currentIndex].target, entered = currentInput.map(i => i.char).join('');
         if (entered === target) {
             playSound('correct'); createConfetti(); attempted++; totalCoins += isRematchRound ? 20 : 50; updateStats();
-            if (!isRematchRound && attempted > 0 && attempted % 6 === 0 && level < 5) showLevelUp(); else setTimeout(() => { currentIndex++; loadQuest(); }, 800);
+            if (!isRematchRound && attempted > 0 && attempted % 15 === 0 && level < 5) showLevelUp(); else setTimeout(() => { currentIndex++; loadQuest(); }, 800);
         } else {
             playSound('wrong'); document.querySelectorAll('.slot').forEach(s => s.classList.add('shake'));
             setTimeout(() => { document.getElementById('overlay-msg').innerHTML = `<h2>NOT QUITE!</h2><p>Correct: <b style="color:var(--neon-blue)">${target}</b></p>`; document.getElementById('overlay').style.display = 'flex'; }, 600);
@@ -357,7 +379,7 @@
 
     function showLevelUp() { level++; playSound('levelup'); document.getElementById('level-up-subtext').innerText = `Level ${level} Unlocked!`; document.getElementById('level-up-overlay').style.display = 'flex'; }
     function hideLevelUp() { playSound('click'); document.getElementById('level-up-overlay').style.display = 'none'; document.getElementById('level-tag').innerText = `LEVEL ${level}`; currentIndex++; loadQuest(); }
-    function updateStats() { document.getElementById('coins').innerText = totalCoins; document.getElementById('done-count').innerText = Math.min(attempted, 30); }
+    function updateStats() { document.getElementById('coins').innerText = totalCoins; document.getElementById('done-count').innerText = Math.min(attempted, 75); }
     function nextQuestion() { playSound('click'); document.getElementById('overlay').style.display='none'; currentIndex++; updateStats(); loadQuest(); }
 
     function showFinal() {
