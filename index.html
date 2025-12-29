@@ -3,312 +3,441 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Muddled Marketplace - Level 1</title>
+    <title>Neko Quest: 75 Words</title>
     <style>
-        body {
-            margin: 0;
-            padding: 0;
+        :root {
+            --neon-pink: #ff00ff;
+            --neon-blue: #00ffff;
+            --bg-dark: #0a0118;
+            --panel-bg: rgba(15, 2, 38, 0.9);
+            --error-red: #ff3e3e;
+            --success-green: #00ff88;
+            --cat-white: #fdfdfd;
+            --cat-pink: #ffb7c5;
+            --xp-purple: #8a2be2;
+        }
+
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%;
             overflow: hidden;
-            background-color: #87CEEB;
-            font-family: 'Arial Rounded MT Bold', 'Helvetica', sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        #game-ui {
-            position: absolute;
-            top: 0;
-            width: 100%;
-            height: 180px;
-            background: linear-gradient(to bottom, #5d4037, #8d6e63);
-            border-bottom: 8px solid #3e2723;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            z-index: 10;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
-        }
-        .stats-bar {
-            position: absolute;
-            top: 10px;
-            right: 20px;
-            background: #f1c40f;
-            padding: 5px 20px;
-            border-radius: 50px;
-            border: 3px solid #f39c12;
-            font-weight: bold;
-            font-size: 1.2rem;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .sentence-display {
-            color: #fff;
-            font-size: 1.8rem;
-            text-align: center;
-            padding: 0 20px;
-            line-height: 1.4;
-        }
-        .muddled-word {
-            background: #e67e22;
-            padding: 2px 12px;
-            border-radius: 8px;
+            background-color: var(--bg-dark);
+            font-family: 'Fredoka One', 'Segoe UI', cursive, sans-serif;
             color: white;
-            display: inline-block;
-            margin: 0 5px;
-            box-shadow: 0 3px 0 #d35400;
         }
-        canvas {
-            display: block;
-            background: linear-gradient(#87CEEB 0%, #87CEEB 60%, #2ecc71 60%, #2ecc71 100%);
+
+        #bg-canvas { position: fixed; top: 0; left: 0; z-index: -1; }
+
+        /* CARTOON INTRO */
+        #intro-overlay {
+            position: fixed; inset: 0; background: linear-gradient(135deg, #1a0b2e, #0a0118); 
+            z-index: 2000; display: flex; flex-direction: column; align-items: center; 
+            justify-content: center; transition: opacity 0.8s ease;
+        }
+        
+        #intro-city {
+            position: absolute; bottom: 0; width: 200%; height: 200px;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 200"><path d="M0 200V150L50 120L80 150L120 100L160 150L200 80L250 150L300 110L350 160L400 90L450 150L500 120L550 150L600 100L650 160L700 80L750 140L800 100L850 150L900 110L950 150L1000 120V200H0Z" fill="%231a0b2e" opacity="0.5"/></svg>');
+            background-repeat: repeat-x; animation: city-scroll 20s linear infinite;
+        }
+        @keyframes city-scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+        #intro-character {
+            width: 200px; height: 200px; transform: scale(0); transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            filter: drop-shadow(0 0 20px var(--neon-blue));
+        }
+        #intro-speech {
+            background: white; color: #333; padding: 15px 30px; border-radius: 20px;
+            position: relative; margin-top: 20px; font-weight: 900; font-size: 1.5rem;
+            opacity: 0; transform: translateY(20px); transition: all 0.4s;
+            max-width: 80%; text-align: center;
+        }
+        #intro-speech::after {
+            content: ''; position: absolute; top: -10px; left: 50%; transform: translateX(-50%);
+            border-left: 10px solid transparent; border-right: 10px solid transparent;
+            border-bottom: 10px solid white;
+        }
+        .hero-ready-btn {
+            background: var(--neon-pink); color: white; border: none; padding: 15px 40px;
+            border-radius: 50px; font-size: 1.2rem; font-weight: 900; cursor: pointer;
+            margin-top: 30px; box-shadow: 0 10px 0 #b000b0; transition: all 0.1s;
+            z-index: 2005; display: none;
+        }
+        .hero-ready-btn:active { transform: translateY(4px); box-shadow: 0 6px 0 #b000b0; }
+
+        /* Game Header */
+        #game-header {
+            width: 100%; height: 70px;
+            background: var(--panel-bg);
+            display: flex; flex-direction: column; align-items: center;
+            padding: 5px 20px; box-sizing: border-box;
+            position: fixed; top: 0; z-index: 100; border-bottom: 2px solid rgba(255,255,255,0.05);
+        }
+        .header-main { width: 100%; display: flex; justify-content: space-between; align-items: center; }
+        .xp-container { width: 100%; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden; margin-top: 5px; }
+        #xp-fill { width: 0%; height: 100%; background: var(--neon-blue); transition: width 0.4s; }
+
+        /* Game Stage */
+        #game-stage {
+            height: 100vh; width: 100%;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            opacity: 0; transition: opacity 1s; padding-top: 60px;
+        }
+
+        .sentence-box { font-size: 1.4rem; line-height: 1.4; max-width: 800px; text-align: center; margin-bottom: 20px; color: #ddd; }
+        .highlight-word { color: var(--neon-blue); font-weight: 900; background: rgba(0,255,255,0.1); padding: 2px 8px; border-radius: 5px; }
+
+        #word-slots { display: flex; gap: 6px; margin-bottom: 20px; justify-content: center; }
+        .slot {
+            width: 60px; height: 70px; background: rgba(255, 255, 255, 0.05);
+            border: 2px dashed rgba(255,255,255,0.2); border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.8rem; font-weight: 900; cursor: pointer;
+        }
+        .slot.filled { border-style: solid; border-color: var(--neon-blue); background: rgba(0,255,255,0.1); }
+
+        #letter-pool { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; max-width: 700px; }
+        .letter-tile {
+            width: 65px; height: 65px; background: linear-gradient(to bottom, #ff00ff, #b000b0);
+            border-radius: 15px; display: flex; align-items: center; justify-content: center;
+            font-size: 2rem; font-weight: 900; cursor: pointer; 
+            box-shadow: 0 6px 0 #600060; transition: all 0.1s;
+        }
+        .letter-tile:active { transform: translateY(4px); box-shadow: 0 2px 0 #600060; }
+        .letter-tile.used { opacity: 0; pointer-events: none; transform: scale(0.5); }
+
+        /* High Paw */
+        #high-paw-container {
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0);
+            z-index: 1500; pointer-events: none; transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        #high-paw-container.show { transform: translate(-50%, -50%) scale(2); }
+
+        /* Companion */
+        #companion-hub {
+            position: fixed; bottom: 15px; left: 50%; transform: translateX(-50%);
+            width: 90%; max-width: 500px; background: var(--panel-bg);
+            border-radius: 20px; display: flex; align-items: center; padding: 10px 20px;
+            border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(10px);
+        }
+        #cat-svg { width: 70px; height: 70px; flex-shrink: 0; }
+        #companion-msg { margin-left: 15px; font-size: 1rem; line-height: 1.2; }
+
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        .floating { animation: float 3s ease-in-out infinite; }
+        
+        #overlay, #level-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.95);
+            display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 1000;
         }
     </style>
 </head>
 <body>
 
-<div id="game-ui">
-    <div class="stats-bar">
-        <span>💰 Coins: <span id="coin-count">0</span></span>
+<div id="intro-overlay">
+    <div id="intro-city"></div>
+    <div id="intro-character" class="floating">
+        <svg viewBox="0 0 100 100">
+            <path d="M20,30 L10,5 L35,20" fill="white" />
+            <path d="M80,30 L90,5 L65,20" fill="white" />
+            <circle cx="50" cy="55" r="40" fill="white" />
+            <circle cx="35" cy="50" r="5" fill="#222" />
+            <circle cx="65" cy="50" r="5" fill="#222" />
+            <path d="M45,65 Q50,70 55,65" fill="none" stroke="#222" stroke-width="3" stroke-linecap="round" />
+        </svg>
     </div>
-    <div id="msg" style="color: #ffeb3b; font-size: 1rem; margin-bottom: 5px;">FIX THE SHOP SIGN!</div>
-    <div class="sentence-display" id="sentence-container">
-        Loading...
-    </div>
+    <div id="intro-speech">Meow! Ready to play?</div>
+    <button class="hero-ready-btn" id="start-btn" onclick="finishIntro()">START QUEST!</button>
 </div>
 
-<canvas id="gameCanvas"></canvas>
+<canvas id="bg-canvas"></canvas>
+
+<div id="game-header">
+    <div class="header-main">
+        <div>
+            <span style="font-weight: 900; color: var(--neon-blue); letter-spacing: 1px;">NEKO QUEST</span>
+            <span id="level-tag" style="margin-left:10px; font-size: 0.7rem; background: var(--xp-purple); padding: 2px 8px; border-radius: 10px;">LVL 1</span>
+        </div>
+        <div style="display: flex; gap: 15px; font-weight: 900; font-size: 0.9rem;">
+            <span style="color: #ffd700;">💰 <span id="coins">0</span></span>
+            <span style="color: var(--neon-blue);">⏳ <span id="timer">60</span></span>
+            <span style="color: var(--neon-pink);">🔥 <span id="streak">0</span></span>
+        </div>
+    </div>
+    <div class="xp-container"><div id="xp-fill"></div></div>
+</div>
+
+<div id="game-stage">
+    <div class="sentence-box" id="sentence-container">Loading...</div>
+    <div id="word-slots"></div>
+    <div id="letter-pool"></div>
+</div>
+
+<div id="high-paw-container">
+    <svg width="100" height="100" viewBox="0 0 100 100">
+        <circle cx="50" cy="70" r="25" fill="#ffb7c5" />
+        <circle cx="25" cy="40" r="10" fill="#ffb7c5" />
+        <circle cx="45" cy="30" r="12" fill="#ffb7c5" />
+        <circle cx="70" cy="35" r="11" fill="#ffb7c5" />
+        <circle cx="85" cy="55" r="9" fill="#ffb7c5" />
+    </svg>
+</div>
+
+<div id="companion-hub">
+    <div id="cat-svg">
+        <svg viewBox="0 0 100 100">
+            <path d="M25,35 L15,10 L40,25" fill="white" />
+            <path d="M75,35 L85,10 L60,25" fill="white" />
+            <circle cx="50" cy="55" r="35" fill="white" />
+            <circle cx="38" cy="55" r="4" fill="#222" />
+            <circle cx="62" cy="55" r="4" fill="#222" />
+            <path d="M45,68 Q50,72 55,68" fill="none" stroke="#222" stroke-width="2" id="cat-mouth" />
+        </svg>
+    </div>
+    <div id="companion-msg">"Let's untangle these words, meow!"</div>
+</div>
+
+<div id="overlay">
+    <div id="overlay-msg" style="text-align:center;"></div>
+    <button class="hero-ready-btn" style="display:block; margin: 30px auto;" onclick="nextQuestion()">NEXT WORD</button>
+</div>
+
+<div id="level-overlay">
+    <h1 style="font-size: 3rem; color: var(--neon-blue);">LEVEL UP!</h1>
+    <h2 id="level-title" style="color: var(--neon-pink);">WORD KITTEN</h2>
+    <button class="hero-ready-btn" style="display:block;" onclick="closeLevelOverlay()">MEOW-SOME!</button>
+</div>
 
 <script>
-    const canvas = document.getElementById('gameCanvas');
-    const ctx = canvas.getContext('2d');
-    const coinEl = document.getElementById('coin-count');
-    const sentenceContainer = document.getElementById('sentence-container');
-    const msgEl = document.getElementById('msg');
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    
+    function playSound(type) {
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const now = audioCtx.currentTime;
+        if (type === 'cat-click') {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.frequency.setValueAtTime(400, now);
+            osc.frequency.exponentialRampToValueAtTime(800, now + 0.1);
+            gain.gain.setValueAtTime(0.1, now);
+            gain.gain.linearRampToValueAtTime(0, now + 0.1);
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.start(); osc.stop(now + 0.1);
+        } else if (type === 'meow') {
+            const osc = audioCtx.createOscillator();
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(400, now);
+            osc.frequency.exponentialRampToValueAtTime(600, now + 0.1);
+            osc.frequency.exponentialRampToValueAtTime(400, now + 0.4);
+            const g = audioCtx.createGain();
+            g.gain.setValueAtTime(0.05, now);
+            g.gain.linearRampToValueAtTime(0, now + 0.5);
+            osc.connect(g); g.connect(audioCtx.destination);
+            osc.start(); osc.stop(now + 0.5);
+        } else if (type === 'intro') {
+            [262, 330, 392, 523].forEach((f, i) => {
+                const o = audioCtx.createOscillator();
+                const g = audioCtx.createGain();
+                o.frequency.value = f;
+                g.gain.setValueAtTime(0.05, now + i*0.2);
+                g.gain.linearRampToValueAtTime(0, now + i*0.2 + 0.3);
+                o.connect(g); g.connect(audioCtx.destination);
+                o.start(now + i*0.2); o.stop(now + i*0.2 + 0.3);
+            });
+        }
+    }
 
-    const levelData = [
+    const rawData = [
         { scrambled: "HCOLOS", target: "SCHOOL", sentence: "The _____ bus was late." },
         { scrambled: "BEZAR", target: "ZEBRA", sentence: "A _____ is an animal with stripes." },
         { scrambled: "KOBO", target: "BOOK", sentence: "I have lost my _____." },
         { scrambled: "NEPICL", target: "PENCIL", sentence: "Where is my _____?" },
         { scrambled: "YRATP", target: "PARTY", sentence: "What time is the _____?" },
         { scrambled: "RETES", target: "TREES", sentence: "I have big _____ in my garden." },
-        { scrambled: "TCNHEIK", target: "KITCHEN", sentence: "She went to the _____." },
+        { scrambled: "TCNHEIK", target: "KITCHEN", sentence: "She put her apron on and went to the _____." },
         { scrambled: "ITOANTS", target: "STATION", sentence: "We had to be at the _____ by six." },
-        { scrambled: "MENTIU", target: "MINUTE", sentence: "The last _____ of the game." },
-        { scrambled: "ZIAMANEG", target: "MAGAZINE", sentence: "Dad read the _____ before bed." },
-        { scrambled: "NOBLALO", target: "BALLOON", sentence: "The _____ floated into the sky." },
-        { scrambled: "DOGBELB", target: "GOBBLED", sentence: "He _____ the pudding greedily." },
-        { scrambled: "PLAYHIP", target: "HAPPILY", sentence: "Living _____ ever after." },
-        { scrambled: "SEALPIC", target: "SPECIAL", sentence: "There is a _____ offer." },
-        { scrambled: "CGTNHIILO", target: "CLOTHING", sentence: "Astronauts wear special _____." }
+        { scrambled: "MENTIU", target: "MINUTE", sentence: "He scored the final goal in the last _____ of the game." },
+        { scrambled: "ZIAMANEG", target: "MAGAZINE", sentence: "Dad read the _____ before going to bed." }
     ];
 
-    let currentLevel = 0;
-    let totalCoins = 0;
-    let tiles = [];
-    let slots = [];
-    let userInput = "";
-    let particles = [];
-    let audioCtx = null;
+    let playlist = [], currentIndex = 0, totalCoins = 0, streak = 0, timer = 60, timerId = null, currentInput = [], isTransitioning = false;
+    let xp = 0, level = 1;
+    const levelTitles = ["NOVICE", "WORD KITTEN", "SPELLING CAT", "LEXICON LYNX", "NEKO MASTER"];
 
-    // Simple Sound Generator
-    function playSound(type) {
-        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-
-        if (type === 'correct') {
-            osc.type = 'sine';
-            osc.frequency.setValueAtTime(500, audioCtx.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(1000, audioCtx.currentTime + 0.1);
-            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
-            osc.start();
-            osc.stop(audioCtx.currentTime + 0.2);
-        } else if (type === 'wrong') {
-            osc.type = 'square';
-            osc.frequency.setValueAtTime(150, audioCtx.currentTime);
-            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-            gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
-            osc.start();
-            osc.stop(audioCtx.currentTime + 0.3);
-        } else if (type === 'coin') {
-            osc.type = 'triangle';
-            osc.frequency.setValueAtTime(880, audioCtx.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(1760, audioCtx.currentTime + 0.1);
-            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
-            osc.start();
-            osc.stop(audioCtx.currentTime + 0.2);
+    // INTRO FLOW
+    function startIntro() {
+        if (sessionStorage.getItem('nekoIntroSkipped')) {
+            finishIntro();
+            return;
         }
+        setTimeout(() => {
+            document.getElementById('intro-character').style.transform = 'scale(1)';
+            playSound('intro');
+            playSequence();
+        }, 500);
     }
 
-    class Tile {
-        constructor(char, x, y) {
-            this.char = char;
-            this.x = x;
-            this.y = y;
-            this.w = 70;
-            this.h = 70;
-            this.isClicked = false;
-            this.color = `hsl(${Math.random() * 40 + 20}, 80%, 60%)`;
-        }
-
-        draw() {
-            if (this.isClicked) return;
-            ctx.save();
-            ctx.shadowBlur = 15;
-            ctx.shadowColor = "rgba(0,0,0,0.2)";
-            ctx.fillStyle = this.color;
-            ctx.beginPath();
-            ctx.roundRect(this.x - this.w/2, this.y - this.h/2, this.w, this.h, 12);
-            ctx.fill();
-            ctx.strokeStyle = "rgba(255,255,255,0.8)";
-            ctx.lineWidth = 4;
-            ctx.stroke();
-            
-            ctx.fillStyle = "white";
-            ctx.font = "bold 36px Arial";
-            ctx.textAlign = "center";
-            ctx.textBaseline = "middle";
-            ctx.fillText(this.char, this.x, this.y);
-            ctx.restore();
-        }
-
-        contains(mx, my) {
-            return mx > this.x - this.w/2 && mx < this.x + this.w/2 && 
-                   my > this.y - this.h/2 && my < this.y + this.h/2;
-        }
-    }
-
-    function initLevel() {
-        userInput = "";
-        tiles = [];
-        slots = [];
-        const data = levelData[currentLevel];
+    const introSteps = [
+        "Welcome to Neko Quest!",
+        "The market is a mess...",
+        "Help me fix the words!",
+        "Are you ready?"
+    ];
+    let step = 0;
+    function playSequence() {
+        const speech = document.getElementById('intro-speech');
+        speech.style.opacity = '1';
+        speech.style.transform = 'translateY(0)';
+        speech.innerText = introSteps[step];
         
-        // Setup UI
-        sentenceContainer.innerHTML = data.sentence.replace("_____", `<span class="muddled-word">${data.scrambled}</span>`);
-        msgEl.innerText = `SHOP ${currentLevel + 1} / 15`;
-
-        // Create letter tiles (shuffled)
-        let chars = data.scrambled.split('');
-        const startX = (canvas.width / 2) - ((chars.length - 1) * 45);
-        
-        chars.forEach((c, i) => {
-            tiles.push(new Tile(c, startX + (i * 90), canvas.height * 0.75));
-            slots.push({ x: startX + (i * 90), y: canvas.height * 0.42 });
-        });
-    }
-
-    function createParticles(x, y, color = "gold") {
-        for(let i=0; i<12; i++) {
-            particles.push({
-                x: x, y: y,
-                vx: (Math.random() - 0.5) * 12,
-                vy: (Math.random() - 0.5) * 12,
-                life: 1.0,
-                color: color === "gold" ? "#f1c40f" : "#e74c3c"
-            });
+        if (step < introSteps.length - 1) {
+            step++;
+            setTimeout(playSequence, 2000);
+        } else {
+            document.getElementById('start-btn').style.display = 'block';
         }
     }
 
-    function draw() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        
-        // Ground and decorative road
-        ctx.fillStyle = "#95a5a6";
-        ctx.fillRect(0, canvas.height * 0.35, canvas.width, 150);
-
-        // Signboard
-        ctx.fillStyle = "#ecf0f1";
-        ctx.fillRect(canvas.width/2 - 320, canvas.height * 0.38, 640, 80);
-        ctx.strokeStyle = "#7e5109";
-        ctx.lineWidth = 8;
-        ctx.strokeRect(canvas.width/2 - 320, canvas.height * 0.38, 640, 80);
-
-        // Target Slots
-        slots.forEach((slot, i) => {
-            ctx.fillStyle = "rgba(0,0,0,0.1)";
-            ctx.fillRect(slot.x - 30, slot.y - 30, 60, 60);
-            if (userInput[i]) {
-                ctx.fillStyle = "#2c3e50";
-                ctx.font = "bold 44px Arial";
-                ctx.textAlign = "center";
-                ctx.fillText(userInput[i], slot.x, slot.y + 15);
-            }
-        });
-
-        tiles.forEach(t => t.draw());
-
-        particles.forEach((p, i) => {
-            p.x += p.vx; p.y += p.vy; p.life -= 0.02;
-            ctx.globalAlpha = p.life;
-            ctx.fillStyle = p.color;
-            ctx.beginPath();
-            ctx.arc(p.x, p.y, 4, 0, Math.PI*2);
-            ctx.fill();
-            if (p.life <= 0) particles.splice(i, 1);
-        });
-        ctx.globalAlpha = 1.0;
-
-        requestAnimationFrame(draw);
+    function finishIntro() {
+        sessionStorage.setItem('nekoIntroSkipped', 'true');
+        document.getElementById('intro-overlay').style.opacity = '0';
+        setTimeout(() => {
+            document.getElementById('intro-overlay').style.display = 'none';
+            document.getElementById('game-stage').style.opacity = '1';
+            initGame();
+        }, 800);
     }
 
-    canvas.addEventListener('mousedown', (e) => {
-        const rect = canvas.getBoundingClientRect();
-        const mx = e.clientX - rect.left;
-        const my = e.clientY - rect.top;
+    function initGame() {
+        playlist = [...rawData].sort(() => Math.random() - 0.5);
+        loadQuest();
+    }
 
-        tiles.forEach(t => {
-            if (!t.isClicked && t.contains(mx, my)) {
-                const targetChar = levelData[currentLevel].target[userInput.length];
-                if (t.char === targetChar) {
-                    playSound('correct');
-                    t.isClicked = true;
-                    userInput += t.char;
-                    createParticles(t.x, t.y, "gold");
-                    
-                    if (userInput === levelData[currentLevel].target) {
-                        totalCoins += 100;
-                        coinEl.innerText = totalCoins;
-                        playSound('coin');
-                        setTimeout(() => {
-                            currentLevel++;
-                            if (currentLevel < levelData.length) {
-                                initLevel();
-                            } else {
-                                const tvTime = Math.floor(totalCoins / 100);
-                                document.body.innerHTML = `
-                                    <div style="text-align:center; padding-top:100px;">
-                                        <h1>🏆 Marketplace Restored!</h1>
-                                        <h2>Total Coins: ${totalCoins}</h2>
-                                        <div style="font-size: 2rem; background: #f1c40f; padding: 20px; border-radius: 20px; display: inline-block;">
-                                            📺 You earned ${tvTime} minutes of TV Time!
-                                        </div>
-                                        <p>Ready for Level 2: The Safari?</p>
-                                    </div>
-                                `;
-                            }
-                        }, 800);
-                    }
-                } else {
-                    playSound('wrong');
-                    createParticles(mx, my, "red");
-                }
-            }
+    function loadQuest() {
+        if (currentIndex >= playlist.length) { showFinal(); return; }
+        isTransitioning = false;
+        const q = playlist[currentIndex];
+        document.getElementById('sentence-container').innerHTML = q.sentence.replace("_____", `<span class="highlight-word">${q.scrambled}</span>`);
+        
+        const slots = document.getElementById('word-slots');
+        const pool = document.getElementById('letter-pool');
+        slots.innerHTML = ""; pool.innerHTML = "";
+        currentInput = [];
+
+        q.target.split('').forEach((_, i) => {
+            const s = document.createElement('div'); s.className = 'slot';
+            s.onclick = () => removeLetter(i); slots.appendChild(s);
         });
-    });
 
-    window.onload = () => {
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-        initLevel();
-        draw();
-    };
+        q.scrambled.split('').forEach((char, i) => {
+            const t = document.createElement('div'); t.className = 'letter-tile';
+            t.innerText = char; t.onclick = () => addLetter(char, i); pool.appendChild(t);
+        });
+        startTimer();
+    }
+
+    function addLetter(char, idx) {
+        if (isTransitioning) return;
+        playSound('cat-click');
+        const q = playlist[currentIndex];
+        if (currentInput.length < q.target.length) {
+            currentInput.push({char, idx});
+            const s = document.querySelectorAll('.slot')[currentInput.length - 1];
+            s.innerText = char; s.classList.add('filled');
+            document.querySelectorAll('.letter-tile')[idx].classList.add('used');
+            if (currentInput.length === q.target.length) check();
+        }
+    }
+
+    function removeLetter(idx) {
+        if (isTransitioning || idx >= currentInput.length) return;
+        playSound('cat-click');
+        const removed = currentInput.splice(idx);
+        const slots = document.querySelectorAll('.slot');
+        const tiles = document.querySelectorAll('.letter-tile');
+        removed.forEach((item, i) => {
+            const s = slots[idx + i]; s.innerText = ""; s.classList.remove('filled');
+            tiles[item.idx].classList.remove('used');
+        });
+    }
+
+    function check() {
+        isTransitioning = true; clearInterval(timerId);
+        const target = playlist[currentIndex].target;
+        const entered = currentInput.map(i => i.char).join('');
+        if (entered === target) {
+            streak++; totalCoins += 50; xp += 20;
+            document.getElementById('streak').innerText = streak;
+            document.getElementById('coins').innerText = totalCoins;
+            updateXP();
+            playSound('meow');
+            updateCompanion("Purr-fect!", true);
+            setTimeout(() => { currentIndex++; loadQuest(); }, 1000);
+        } else {
+            streak = 0; document.getElementById('streak').innerText = streak;
+            document.querySelectorAll('.slot').forEach(s => s.style.borderColor = 'red');
+            updateCompanion("Not quite, meow...", false);
+            setTimeout(() => {
+                document.getElementById('overlay-msg').innerHTML = `<h2>The word was:</h2><h1 style="color:var(--neon-blue); font-size:3rem;">${target}</h1>`;
+                document.getElementById('overlay').style.display = 'flex';
+            }, 800);
+        }
+    }
+
+    function updateXP() {
+        if (xp >= 100) { xp = 0; level++; showLevelUp(); }
+        document.getElementById('xp-fill').style.width = xp + "%";
+        document.getElementById('level-tag').innerText = `LVL ${level}`;
+    }
+
+    function showLevelUp() {
+        const paw = document.getElementById('high-paw-container');
+        paw.classList.add('show');
+        setTimeout(() => {
+            paw.classList.remove('show');
+            document.getElementById('level-title').innerText = levelTitles[Math.min(level-1, 4)];
+            document.getElementById('level-overlay').style.display = 'flex';
+        }, 1200);
+    }
+
+    function closeLevelOverlay() { document.getElementById('level-overlay').style.display = 'none'; }
+    function nextQuestion() { document.getElementById('overlay').style.display = 'none'; currentIndex++; loadQuest(); }
+
+    function startTimer() {
+        clearInterval(timerId); timer = 60; document.getElementById('timer').innerText = timer;
+        timerId = setInterval(() => {
+            timer--; document.getElementById('timer').innerText = timer;
+            if (timer <= 0) check();
+        }, 1000);
+    }
+
+    function updateCompanion(msg, win) {
+        document.getElementById('companion-msg').innerText = `"${msg}"`;
+        const mouth = document.getElementById('cat-mouth');
+        mouth.setAttribute('d', win ? 'M45,65 Q50,75 55,65' : 'M45,72 Q50,68 55,72');
+    }
+
+    function showFinal() {
+        document.body.innerHTML = `<div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100vh; text-align:center;">
+            <h1 style="font-size:3rem; color:var(--neon-pink);">QUEST COMPLETE!</h1>
+            <p>You earned ${totalCoins} coins!</p>
+            <button onclick="location.reload()" class="hero-ready-btn" style="display:block;">PLAY AGAIN</button>
+        </div>`;
+    }
+
+    const bg = document.getElementById('bg-canvas'), bctx = bg.getContext('2d');
+    function resize() { bg.width = window.innerWidth; bg.height = window.innerHeight; }
+    window.onresize = resize; resize();
+    let stars = [];
+    for(let i=0; i<80; i++) stars.push({x: Math.random()*2000, y: Math.random()*2000, s: Math.random()*2});
+    function animate() {
+        bctx.fillStyle = '#0a0118'; bctx.fillRect(0,0,bg.width,bg.height);
+        bctx.fillStyle = 'white';
+        stars.forEach(s => { bctx.beginPath(); bctx.arc(s.x % bg.width, s.y % bg.height, s.s, 0, Math.PI*2); bctx.fill(); s.y += 0.2; });
+        requestAnimationFrame(animate);
+    }
+
+    window.onload = () => { startIntro(); animate(); };
 </script>
 </body>
 </html>
