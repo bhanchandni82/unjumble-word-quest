@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Neko Quest: The Grand Challenge</title>
+    <title>Mitsy Quest: The Grand Challenge</title>
     <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -61,18 +61,10 @@
             100% { transform: scale(1); }
         }
 
-        #intro-overlay, #level-up-overlay {
+        #intro-overlay {
             position: fixed; inset: 0; background: radial-gradient(circle, #1a0b2e, #0a0118); 
             z-index: 2000; display: flex; flex-direction: column; align-items: center; 
             justify-content: center; text-align: center; padding: 20px;
-        }
-
-        .input-field {
-            background: rgba(255,255,255,0.1);
-            border: 2px solid var(--neon-blue);
-            border-radius: 15px; padding: 12px 20px;
-            color: white; font-family: 'Fredoka One', cursive;
-            font-size: 1rem; width: 300px; margin-bottom: 20px; outline: none;
         }
 
         .hero-ready-btn {
@@ -132,15 +124,9 @@
 <body>
 
 <div id="intro-overlay">
-    <div style="font-size:4rem; margin-bottom:10px; color:var(--neon-pink); text-shadow: 0 0 20px var(--neon-pink);">NEKO QUEST</div>
-    <div style="font-size:1.8rem; color:var(--neon-blue); margin-bottom:40px;">Muddled Words Challenge</div>
+    <div style="font-size:4rem; margin-bottom:10px; color:var(--neon-pink); text-shadow: 0 0 20px var(--neon-pink);">MITSY QUEST</div>
+    <div style="font-size:1.8rem; color:var(--neon-blue); margin-bottom:40px;">20 Word Challenge</div>
     <button class="hero-ready-btn" onclick="startQuest()">BEGIN MISSION</button>
-</div>
-
-<div id="level-up-overlay" style="display:none;">
-    <h1 style="font-size:3.5rem; color:var(--neon-blue);">LEVEL COMPLETE!</h1>
-    <p id="level-up-subtext" style="font-size:1.5rem;"></p>
-    <button class="hero-ready-btn" onclick="hideLevelUp()">NEXT LEVEL</button>
 </div>
 
 <canvas id="bg-canvas"></canvas>
@@ -148,12 +134,11 @@
 
 <div id="game-header">
     <div class="stats-group">
-        <div id="level-tag" style="color: var(--neon-blue); font-size: 1.5rem; font-weight: bold;">LEVEL 1</div>
         <div id="timer-display">60s</div>
     </div>
     <div class="stats-group">
         <div class="stat-item">💰 <span id="coins">0</span></div>
-        <div class="stat-item">✅ <span id="done-count">0</span>/75</div>
+        <div class="stat-item">✅ <span id="done-count">0</span>/20</div>
     </div>
 </div>
 
@@ -190,10 +175,6 @@
             osc.type = 'sawtooth'; osc.frequency.setValueAtTime(150, now); osc.frequency.linearRampToValueAtTime(50, now + 0.3);
             gain.gain.setValueAtTime(0.1, now); gain.gain.linearRampToValueAtTime(0, now + 0.3);
             osc.start(); osc.stop(now + 0.3);
-        } else if (type === 'levelup') {
-            osc.type = 'square'; osc.frequency.setValueAtTime(400, now); osc.frequency.exponentialRampToValueAtTime(800, now + 0.5);
-            gain.gain.setValueAtTime(0.05, now); gain.gain.linearRampToValueAtTime(0, now + 0.5);
-            osc.start(); osc.stop(now + 0.5);
         }
     }
 
@@ -219,7 +200,6 @@
     }
     animateFx();
 
-// STRICTLY 75 QUESTIONS FROM PDF
 const ALL_QUESTIONS = [
     { scrambled: "HCOLOS", target: "SCHOOL", sentence: "The _____ bus was late." },
     { scrambled: "BEZAR", target: "ZEBRA", sentence: "A _____ is an animal with stripes." },
@@ -235,7 +215,7 @@ const ALL_QUESTIONS = [
     { scrambled: "DOGBELB", target: "GOBBLED", sentence: "He _____ the pudding greedily." },
     { scrambled: "PLAYHIP", target: "HAPPILY", sentence: "The fairy tale ended with them all living _____ ever after." },
     { scrambled: "SEALPIC", target: "SPECIAL", sentence: "Each week there is a _____ offer at super market." },
-    { scrambled: "CGTNHIILO", target: "CLOTHING", sentence: "Astronauts wear specials _____ when travelling in space." },
+    { scrambled: "CGTNHILO", target: "CLOTHING", sentence: "Astronauts wear specials _____ when travelling in space." },
     { scrambled: "SUNYRER", target: "NURSERY", sentence: "Little children enjoy going to _____ each day." },
     { scrambled: "ABATEKFRS", target: "BREAKFAST", sentence: "What is your favourite _____ cereal?" },
     { scrambled: "NEEVOPSLE", target: "ENVELOPES", sentence: "We put letters in _____." },
@@ -250,7 +230,7 @@ const ALL_QUESTIONS = [
     { scrambled: "NGEIENV", target: "EVENING", sentence: "My mum likes a cup of coffee in the _____." },
     { scrambled: "UATIFEULB", target: "BEAUTIFUL", sentence: "It was _____ bunch of flowers." },
     { scrambled: "ADGENBA", target: "BANDAGE", sentence: "There was a _____ on his bad leg." },
-    { scrambled: "KAEPNASC", target: "PANCAKES", sentence: "On Shrove Tuesday, they ate _____." },
+    { scrambled: "KAEPNASC", target: "PANCAKES", sentence: "On last Tuesday, they ate _____." },
     { scrambled: "NIECAM", target: "CINEMA", sentence: "They went to the _____ to see their favourite film." },
     { scrambled: "EONYJUR", target: "JOURNEY", sentence: "They were tired after the long _____." },
     { scrambled: "NIALMAS", target: "ANIMALS", sentence: "The _____ were very tame." },
@@ -299,11 +279,12 @@ const ALL_QUESTIONS = [
     ];
 
     let sessionPool = [], skipPool = [], currentIndex = 0;
-    let totalCoins = 0, currentInput = [], isTransitioning = false, level = 1, attempted = 0;
+    let totalCoins = 0, currentInput = [], isTransitioning = false, attempted = 0;
     let timeLeft = 60, timerInterval, isRematchRound = false;
 
     function startQuest() {
-        sessionPool = [...ALL_QUESTIONS].sort(() => Math.random() - 0.5);
+        // Pick 20 random questions for this session
+        sessionPool = [...ALL_QUESTIONS].sort(() => Math.random() - 0.5).slice(0, 20);
         document.getElementById('intro-overlay').style.display = 'none';
         document.getElementById('game-stage').style.display = 'flex';
         loadQuest();
@@ -368,20 +349,18 @@ const ALL_QUESTIONS = [
         const target = sessionPool[currentIndex].target, entered = currentInput.map(i => i.char).join('');
         if (entered === target) {
             playSound('correct'); createConfetti(); attempted++; totalCoins += isRematchRound ? 20 : 50; updateStats();
-            if (!isRematchRound && attempted > 0 && attempted % 15 === 0 && level < 5) showLevelUp(); else setTimeout(() => { currentIndex++; loadQuest(); }, 800);
+            setTimeout(() => { currentIndex++; loadQuest(); }, 800);
         } else {
             playSound('wrong'); document.querySelectorAll('.slot').forEach(s => s.classList.add('shake'));
             setTimeout(() => { document.getElementById('overlay-msg').innerHTML = `<h2>NOT QUITE!</h2><p>Correct: <b style="color:var(--neon-blue)">${target}</b></p>`; document.getElementById('overlay').style.display = 'flex'; }, 600);
         }
     }
 
-    function showLevelUp() { level++; playSound('levelup'); document.getElementById('level-up-subtext').innerText = `Level ${level} Unlocked!`; document.getElementById('level-up-overlay').style.display = 'flex'; }
-    function hideLevelUp() { playSound('click'); document.getElementById('level-up-overlay').style.display = 'none'; document.getElementById('level-tag').innerText = `LEVEL ${level}`; currentIndex++; loadQuest(); }
-    function updateStats() { document.getElementById('coins').innerText = totalCoins; document.getElementById('done-count').innerText = Math.min(attempted, 75); }
+    function updateStats() { document.getElementById('coins').innerText = totalCoins; document.getElementById('done-count').innerText = Math.min(attempted, 20); }
     function nextQuestion() { playSound('click'); document.getElementById('overlay').style.display='none'; currentIndex++; updateStats(); loadQuest(); }
 
     function showFinal() {
-        playSound('levelup'); createConfetti();
+        createConfetti();
         document.body.innerHTML = `
         <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; background:var(--bg-dark); padding:20px;">
             <div style="background: white; color: #1a0b2e; padding: 40px; border-radius: 30px; border: 15px solid var(--neon-blue); max-width: 700px; width: 90%; text-align: center;">
