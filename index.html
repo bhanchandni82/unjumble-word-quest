@@ -133,8 +133,7 @@
 
 <div id="intro-overlay">
     <div style="font-size:4rem; margin-bottom:10px; color:var(--neon-pink); text-shadow: 0 0 20px var(--neon-pink);">NEKO QUEST</div>
-    <div style="font-size:1.8rem; color:var(--neon-blue); margin-bottom:30px;">Muddled Words Challenge</div>
-    <input type="email" id="user-email" class="input-field" placeholder="Enter your name">
+    <div style="font-size:1.8rem; color:var(--neon-blue); margin-bottom:40px;">Muddled Words Challenge</div>
     <button class="hero-ready-btn" onclick="startQuest()">BEGIN MISSION</button>
 </div>
 
@@ -300,11 +299,10 @@ const ALL_QUESTIONS = [
     ];
 
     let sessionPool = [], skipPool = [], currentIndex = 0;
-    let totalCoins = 0, currentInput = [], isTransitioning = false, level = 1, userName = "", attempted = 0;
+    let totalCoins = 0, currentInput = [], isTransitioning = false, level = 1, attempted = 0;
     let timeLeft = 60, timerInterval, isRematchRound = false;
 
     function startQuest() {
-        userName = document.getElementById('user-email').value || "Guest";
         sessionPool = [...ALL_QUESTIONS].sort(() => Math.random() - 0.5);
         document.getElementById('intro-overlay').style.display = 'none';
         document.getElementById('game-stage').style.display = 'flex';
@@ -388,7 +386,7 @@ const ALL_QUESTIONS = [
         <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; background:var(--bg-dark); padding:20px;">
             <div style="background: white; color: #1a0b2e; padding: 40px; border-radius: 30px; border: 15px solid var(--neon-blue); max-width: 700px; width: 90%; text-align: center;">
                 <h1 style="color:var(--neon-pink)">QUEST COMPLETE!</h1>
-                <h2>Congratulations, ${userName}!</h2>
+                <h2>Congratulations!</h2>
                 <div style="font-size:2rem; margin:20px 0;">💰 Total Score: ${totalCoins}</div>
                 <div style="background:var(--neon-blue); color:var(--bg-dark); padding:15px; border-radius:10px; font-weight:bold;">MISSION ACCOMPLISHED!</div>
             </div>
