@@ -1,6 +1,6 @@
 🐱 MITSY QUEST: The Grand Challenge
 
-MITSY QUEST is a high-octane, neon-soaked word unscrambling game designed to test your vocabulary under pressure. Set against a deep-space cyberpunk backdrop, you have 60 seconds to solve each muddled word before the timer hits zero.
+MITSY QUEST is a fun, neon-themed word unscrambling game designed to test your vocabulary under pressure. Set against a deep-space cyberpunk backdrop, you have 60 seconds to solve each muddled word before the timer hits zero.
 
 🎮 Gameplay Features
 
